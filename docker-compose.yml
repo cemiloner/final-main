@@ -13,5 +13,29 @@ services:
       # vendor ve database hariç tutulur, bunlar container içinde yönetilir
       - .:/var/www/html
       - /var/www/html/vendor # vendor klasörünü volume olarak tanımla (hosttan üzerine yazılmasın)
-      - /var/www/html/database # database klasörünü volume olarak tanımla (kalıcı veri)
-    restart: unless-stopped 
+    environment:
+      DB_HOST: postgres # PostgreSQL servis adı
+      DB_PORT: 5432
+      DB_DATABASE: lokanta_db
+      DB_USERNAME: lokanta_user
+      DB_PASSWORD: lokanta_password
+      # APP_ENV: development # Gerekirse ortamı ayarlayın
+    depends_on:
+      - postgres # App servisi başlamadan önce postgres servisinin başlamasını bekle
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine # PostgreSQL imajı
+    container_name: lokanta_postgres_db
+    environment:
+      POSTGRES_DB: lokanta_db # Veritabanı adı
+      POSTGRES_USER: lokanta_user # Kullanıcı adı
+      POSTGRES_PASSWORD: lokanta_password # Şifre
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Verilerin kalıcı olması için volume
+    ports:
+      - "5432:5432" # Opsiyonel: Hosttan direk erişim için (geliştirme sırasında)
+    restart: unless-stopped
+
+volumes:
+  postgres_data: # PostgreSQL verileri için named volume 

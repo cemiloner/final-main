@@ -1,14 +1,14 @@
 # PHP 8.1 ve Apache içeren resmi imajı kullan
 FROM php:8.1-apache
 
-# Gerekli PHP eklentilerini kur (pdo_sqlite dahil)
-# libsqlite3-dev SQLite geliştirme dosyaları için gereklidir
+# Gerekli PHP eklentilerini kur
+# libpq-dev PostgreSQL geliştirme dosyaları için gereklidir
 RUN apt-get update && apt-get install -y \
-    libsqlite3-dev \
+    libpq-dev \
     libzip-dev \
     unzip \
     && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install pdo pdo_sqlite zip
+    && docker-php-ext-install pdo pdo_pgsql zip
 
 # Composer'ı kur
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -32,8 +32,9 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction --no-progre
 COPY . .
 
 # Gerekli klasörlerin sahibi Apache kullanıcısı (www-data) olsun
-RUN mkdir -p database storage/logs public/uploads/products \
-    && chown -R www-data:www-data database storage public/uploads
+# 'database' klasörü kaldırıldı.
+RUN mkdir -p storage/logs public/uploads/products \
+    && chown -R www-data:www-data storage public/uploads
 
 # İsteğe bağlı: Port 80'i dışarı aç (docker-compose içinde de yapılabilir)
 # EXPOSE 80

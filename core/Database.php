@@ -14,18 +14,26 @@ class Database
             return; // Zaten bağlıysa tekrar bağlanma
         }
 
-        // SQLite veritabanı yolu
-        // Proje kök dizinine göre database/database.sqlite
-        $dbPath = __DIR__ . '/../database/database.sqlite';
+        // Ortam değişkenlerinden veritabanı bilgilerini al
+        $host = getenv('DB_HOST') ?: 'localhost'; // Docker Compose servis adı veya varsayılan
+        $port = getenv('DB_PORT') ?: '5432';
+        $dbName = getenv('DB_DATABASE') ?: 'lokanta_db';
+        $user = getenv('DB_USERNAME') ?: 'root'; // Varsayılan kullanıcı (güvenli değil)
+        $password = getenv('DB_PASSWORD') ?: ''; // Varsayılan şifre (güvenli değil)
+
+        // PostgreSQL için DSN (Data Source Name) oluştur
+        $dsn = "pgsql:host={$host};port={$port};dbname={$dbName}";
 
         try {
             // RedBeanPHP bağlantısını kur
-            R::setup('sqlite:' . $dbPath);
+            // R::setup('sqlite:' . $dbPath); // Eski SQLite satırı
+            R::setup($dsn, $user, $password);
 
             // Bağlantı başarılıysa işaretle
             self::$connected = true;
 
             // İlk çalıştırmada örnek veri ekle (eğer kategori yoksa)
+            // Bu kısım PostgreSQL ile uyumluysa kalabilir veya güncellenebilir.
             self::seedInitialData();
 
             // İsteğe bağlı: Geliştirme sırasında şema değişikliklerini dondurmayı kapat
@@ -40,7 +48,7 @@ class Database
             // Bağlantı hatası durumunda
             error_log("Database Connection Error: " . $e->getMessage());
             // Kullanıcıya daha genel bir hata mesajı gösterilebilir
-            die("Veritabanı bağlantısı kurulamadı. Lütfen sistem yöneticisi ile iletişime geçin.");
+            die("Veritabanı bağlantısı kurulamadı. Lütfen sistem yöneticisi ile iletişime geçin. [Details: " . $e->getMessage() . "]");
         }
     }
 
