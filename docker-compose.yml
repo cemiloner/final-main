@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lokanta_siparis_app
+    ports:
+      - "8000:80" # Host port 8000 -> Container port 80 (Apache)
+    volumes:
+      # Proje dizinini container içine mount et (kod değişiklikleri için)
+      # vendor ve database hariç tutulur, bunlar container içinde yönetilir
+      - .:/var/www/html
+      - /var/www/html/vendor # vendor klasörünü volume olarak tanımla (hosttan üzerine yazılmasın)
+      - /var/www/html/database # database klasörünü volume olarak tanımla (kalıcı veri)
+    restart: unless-stopped 
