@@ -37,7 +37,7 @@ class Database
             self::seedInitialData();
 
             // İsteğe bağlı: Geliştirme sırasında şema değişikliklerini dondurmayı kapat
-            // R::freeze(false); // Yeni tablolar/kolonlar otomatik oluşsun
+            R::freeze(false); // Yeni tablolar/kolonlar otomatik oluşsun
 
             // Üretimde şemayı dondurmak iyi bir pratiktir:
             // if (getenv('APP_ENV') === 'production') {

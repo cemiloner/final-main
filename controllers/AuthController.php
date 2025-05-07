@@ -2,9 +2,11 @@
 
 namespace App\Controllers;
 
+
 use App\Core\BaseController;
 // Removed: use \RedBeanPHP\R as R;
-
+include("admin.php");
+include("logout.php");
 class AuthController extends BaseController
 {
     // Restored hardcoded admin credentials
@@ -56,9 +58,9 @@ class AuthController extends BaseController
             error_log('DEBUG: Session ID after regenerate: ' . session_id());
             error_log('DEBUG: Attempting redirect to /admin from AuthController.');
             // -- End of added lines --
-            
-            $this->redirect('/admin'); // Redirect to admin dashboard
-            exit; // Crucial: ensure no further script execution interferes with redirect
+            header("Location:/admin");
+           // echo '<script>window.location.replace("http://localhost:8000/admin")</script>';   // Redirect is not working, so we use header instead of $this->redirect  
+            exit(); // Crucial: ensure no further script execution interferes with redirect
         } else {
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Geçersiz kullanıcı adı veya şifre.'];
             // -- Add this line for debugging failed attempts --

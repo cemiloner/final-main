@@ -56,6 +56,7 @@ $router->post('/admin/products/delete', [AdminProductController::class, 'delete'
 // Admin Kategori Yönetimi Rotaları
 $router->post('/admin/categories/store', [AdminCategoryController::class, 'store']);
 $router->post('/admin/categories/delete', [AdminCategoryController::class, 'delete']);
+$router->get('/admin/categories/list-json', [AdminCategoryController::class, 'listJson']);
 
 // Admin Masa Yönetimi Rotaları
 $router->get('/admin/tables', [AdminTableController::class, 'index']);

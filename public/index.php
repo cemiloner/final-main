@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 // ob_start(); // ÇIKTI ARABELLEĞE ALMA ARTIK GEREKLİ DEĞİL
-
+ob_start();
 // Proje Kök Dizinini Tanımla
 define('ROOT_PATH', dirname(__DIR__));
 
@@ -34,7 +34,7 @@ $router = new Router();
 require_once __DIR__ . '/../routes/web.php';
 
 // İsteği al ve URI'ı temizle
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$requestUri = parse_url($_SERVER['REQUEST_URI'], component: PHP_URL_PATH);
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
 // Rotaları dispatch et
@@ -43,4 +43,4 @@ $router->dispatch($requestUri, $requestMethod);
 // Arabellek debug kodları kaldırıldı
 // $output = ob_get_contents();
 // file_put_contents(__DIR__ . '/output_debug.txt', $output);
-// ob_end_flush(); 
+ob_end_flush(); 

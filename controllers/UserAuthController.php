@@ -4,7 +4,9 @@ namespace App\Controllers;
 
 use App\Core\BaseController;
 use \RedBeanPHP\R as R;
-
+include("userlogin.php");
+include("userregister.php");
+include("menu.php");
 class UserAuthController extends BaseController
 {
     /**
@@ -14,8 +16,10 @@ class UserAuthController extends BaseController
     {
         if (self::isUserLoggedIn()) {
             $this->redirect('/menu');
+            exit();
         }
         $this->view('auth/userlogin', ['pageTitle' => 'Müşteri Girişi'], 'main');
+        exit();
     }
 
     /**
@@ -25,12 +29,12 @@ class UserAuthController extends BaseController
     {
         if (self::isUserLoggedIn()) {
             $this->redirect('/menu');
-            return;
+            exit();
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/userlogin');
-            return;
+            exit();
         }
 
         // Use a generic identifier for login: username or phone_number
@@ -40,7 +44,7 @@ class UserAuthController extends BaseController
         if (empty($identifier) || empty($password)) {
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Kullanıcı adı/telefon ve şifre alanları zorunludur.'];
             $this->redirect('/userlogin');
-            return;
+            exit();
         }
 
         // Find user by username or phone number, ensuring they are a customer
@@ -63,11 +67,13 @@ class UserAuthController extends BaseController
 
             $_SESSION['js_redirect_url'] = $redirectUrl;
             error_log('[UserAuthController loginUser SUCCESS] js_redirect_url set to: ' . $redirectUrl);
+            $this->redirect($redirectUrl);
+            exit(); 
         } else {
             // Login failed
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Geçersiz kullanıcı adı/telefon veya şifre, ya da kullanıcı tipi uygun değil.'];
             $this->redirect('/userlogin');
-            return;
+            exit();
         }
     }
 
@@ -83,6 +89,7 @@ class UserAuthController extends BaseController
         session_regenerate_id(true);
         $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Başarıyla çıkış yaptınız.'];
         $this->redirect('/userlogin');
+        exit();
     }
 
     /**
@@ -142,7 +149,7 @@ class UserAuthController extends BaseController
     {
         if (self::isUserLoggedIn()) {
             $this->redirect('/menu');
-            return;
+            exit();
         }
         // Pass old input and errors to the view if they exist
         $data = [
@@ -154,6 +161,8 @@ class UserAuthController extends BaseController
         unset($_SESSION['validation_errors']);
 
         $this->view('auth/userregister', $data, 'main');
+        
+        exit();
     }
 
     /**
@@ -163,12 +172,12 @@ class UserAuthController extends BaseController
     {
         if (self::isUserLoggedIn()) {
             $this->redirect('/menu');
-            return;
+            exit();
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/userregister');
-            return;
+            exit();
         }
 
         $username = $this->sanitize($_POST['username'] ?? '');
@@ -211,7 +220,7 @@ class UserAuthController extends BaseController
             $_SESSION['validation_errors'] = $errors;
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Lütfen formdaki hataları düzeltin.'];
             $this->redirect('/userregister');
-            return;
+            exit();
         }
 
         // Create user
@@ -229,12 +238,13 @@ class UserAuthController extends BaseController
             
             $_SESSION['js_redirect_url'] = '/userlogin'; // Set for JS redirect
             error_log('[UserAuthController registerUser SUCCESS] js_redirect_url set to: /userlogin');
-            
+            $this->redirect('/userlogin');
+            exit();
         } catch (\Exception $e) {
             // Log error: error_log("User registration failed: " . $e->getMessage());
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.'];
             $this->redirect('/userregister');
-            return; // Ensure script termination after redirect
+            exit(); // Ensure script termination after redirect
         }
     }
 }

@@ -221,6 +221,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // --- Dinamik Kategori Listesi Güncelleme Fonksiyonu --- //
+    function updateCategoryList() {
+        const categoryListUl = document.querySelector('#category-list-container ul.category-list');
+        const categoryDeleteMessageDiv = document.getElementById('category-delete-message'); // Mesajlar için
+
+        if (!categoryListUl) {
+            console.warn('Kategori listesi (ul.category-list) bulunamadı. Güncelleme atlanıyor.');
+            return;
+        }
+
+        // fetch('/admin/api/categories') // BU ENDPOINT'İN OLUŞTURULMASI GEREKİR!
+        // Örnek bir endpoint'e istek atıyoruz, siz bunu kendi endpoint'inizle değiştirmelisiniz.
+        // Geçici olarak varsayılan bir API endpoint'i kullanalım. Gerçek endpoint'i sizin sağlamanız gerekecek.
+        fetch('/admin/categories/list-json') // Örnek endpoint, bunu kendi endpointinizle değiştirin
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.message || `Kategoriler yüklenemedi. Sunucu yanıtı: ${response.status}`);
+                    }).catch(() => { 
+                        throw new Error(`Kategoriler yüklenemedi. Sunucu yanıtı: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                categoryListUl.innerHTML = ''; 
+
+                if (data.success && data.categories && data.categories.length > 0) {
+                    data.categories.forEach(category => {
+                        const listItem = document.createElement('li');
+                        listItem.dataset.categoryId = category.id;
+                        listItem.style.display = 'flex';
+                        listItem.style.justifyContent = 'space-between';
+                        listItem.style.alignItems = 'center';
+                        listItem.style.padding = '8px 0';
+                        listItem.style.borderBottom = '1px solid #eee'; // var(--secondary-color) yerine direkt renk
+
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = category.name; 
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.type = 'button';
+                        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'category-delete-btn');
+                        deleteButton.dataset.categoryId = category.id;
+                        deleteButton.dataset.categoryName = category.name;
+                        deleteButton.title = 'Sil';
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+
+                        listItem.appendChild(nameSpan);
+                        listItem.appendChild(deleteButton);
+                        categoryListUl.appendChild(listItem);
+                    });
+                    if (categoryDeleteMessageDiv) showMessage(categoryDeleteMessageDiv, '', '');
+                } else if (data.success && (!data.categories || data.categories.length === 0)) {
+                    categoryListUl.innerHTML = '<li>Henüz hiç kategori eklenmemiş.</li>';
+                } else {
+                    const errorMessage = data.message || 'Kategoriler listelenirken bir sorun oluştu.';
+                    categoryListUl.innerHTML = `<li>${errorMessage}</li>`;
+                    if (categoryDeleteMessageDiv) showMessage(categoryDeleteMessageDiv, errorMessage, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Kategori listesi güncelleme hatası:', error);
+                categoryListUl.innerHTML = '<li>Kategoriler yüklenirken bir ağ hatası oluştu.</li>';
+                if (categoryDeleteMessageDiv) showMessage(categoryDeleteMessageDiv, 'Kategoriler yüklenirken bir ağ hatası oluştu.', 'error');
+            });
+    }
+
     // --- Admin Kategori Ekleme (Değişiklik Yok) --- //
     const categoryForm = document.getElementById('add-category-form');
     const categoryMessageDiv = document.getElementById('category-message');
@@ -248,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showMessage(categoryMessageDiv, data.message, 'success');
                     categoryNameInput.value = ''; // Input'u temizle
+                    updateCategoryList();
                     // TODO: Product formlarındaki kategori dropdown'larını güncelle (opsiyonel)
                 } else {
                     showMessage(categoryMessageDiv, data.message, 'error');

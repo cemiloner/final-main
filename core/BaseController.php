@@ -58,9 +58,10 @@ abstract class BaseController
      * @param string $url Yönlendirilecek URL
      */
     protected function redirect(string $url): void
-    {
+        {
         $_SESSION['js_redirect_url'] = $url;
         error_log('[BaseController] js_redirect_url set to: ' . $url);
+        header("Location:$url");
     }
 
     // Input sanitizasyonu için basit bir yardımcı (gerektiğinde genişletilebilir)
