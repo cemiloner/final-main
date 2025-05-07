@@ -59,7 +59,8 @@ class Database
 
     // Bağlantıyı kapatmak için (genellikle gerekli olmaz, ama eklenebilir)
     public static function close(): void
-    { R::close();
+    { 
+        R::close();
         self::$connected = false;
     }
 
@@ -88,6 +89,4 @@ class Database
             // error_log("Başlangıç verileri eklendi."); // Bu satırı kaldır
         }
     }
-}
-
-?> 
+} 

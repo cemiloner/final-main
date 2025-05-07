@@ -50,6 +50,4 @@ class Router
         $this->addRoute('POST', $uri, $controllerAction);
     }
 
-}
-
-?> 
+} 

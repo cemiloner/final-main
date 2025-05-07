@@ -15,6 +15,7 @@
                 <a href="/admin"><i class="fas fa-tachometer-alt"></i> Panel</a>
                 <a href="/admin/orders"><i class="fas fa-clipboard-list"></i> Siparişler</a>
                 <a href="/admin/products"><i class="fas fa-box-open"></i> Ürünler</a>
+                <a href="/admin/tables"><i class="fas fa-chair"></i> Masa Yönetimi</a>
                 <a href="/"><i class="fas fa-home"></i> Siteye Dön</a>
                 <a href="/logout"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
             </nav>
@@ -26,7 +27,7 @@
         </div>
     </main>
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> Lokanta Sipariş Sistemi - Admin</p>
+        <p>&copy; <?php echo date('Y'); ?> Pastane Sipariş Sistemi - Admin</p>
     </footer>
     <script src="/js/app.js"></script>
 </body>

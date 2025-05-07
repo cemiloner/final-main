@@ -1,26 +1,21 @@
 <div class="login-container card">
     <div class="card-body">
-        <h2 class="text-center"><?php echo htmlspecialchars($pageTitle); ?></h2>
+        <h2 class="text-center"><?php echo htmlspecialchars($pageTitle ?? 'Admin Girişi'); ?></h2>
 
         <?php 
-        // Session'dan hata mesajlarını al ve göster
-        if (isset($_SESSION['login_error'])):
+        // General flash messages (success or error)
+        if (isset($_SESSION['flash_message'])):
+            $flash = $_SESSION['flash_message'];
         ?>
-            <div class="message message-error">
-                <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($_SESSION['login_error']); ?>
+            <div class="message message-<?php echo htmlspecialchars($flash['type']); ?>">
+                <i class="fas fa-<?php echo $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle'; ?>"></i> 
+                <?php echo htmlspecialchars($flash['text']); ?>
             </div>
         <?php 
-            unset($_SESSION['login_error']); // Mesajı gösterdikten sonra sil
+            unset($_SESSION['flash_message']); // Mesajı gösterdikten sonra sil
         endif;
-
-        if (isset($_SESSION['auth_error'])):
-        ?>
-            <div class="message message-error">
-                <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($_SESSION['auth_error']); ?>
-            </div>
-        <?php 
-            unset($_SESSION['auth_error']); // Mesajı gösterdikten sonra sil
-        endif;
+        
+        // Remove old error message blocks for login_error and auth_error
         ?>
 
         <form action="/login" method="POST">
@@ -35,4 +30,16 @@
             <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
         </form>
     </div>
+
+    <?php if (isset($redirectToAdminAfterDelay) && $redirectToAdminAfterDelay): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Admin already logged in. Redirecting to /admin in 1 second...');
+            setTimeout(function() {
+                window.location.href = '/admin';
+            }, 1000); // 1000 milliseconds = 1 second
+        });
+    </script>
+    <?php endif; ?>
+
 </div> 

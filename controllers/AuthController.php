@@ -3,23 +3,30 @@
 namespace App\Controllers;
 
 use App\Core\BaseController;
+// Removed: use \RedBeanPHP\R as R;
 
 class AuthController extends BaseController
 {
-    private const ADMIN_USERNAME = 'admin'; // Basit kullanıcı adı
-    private const ADMIN_PASSWORD = 'password123'; // Güvensiz! Gerçek projede hashlenmeli.
+    // Restored hardcoded admin credentials
+    private const ADMIN_USERNAME = 'admin'; 
+    private const ADMIN_PASSWORD = 'sifre123';  
 
     /**
      * Giriş formunu gösterir.
      */
     public function showLoginForm(): void
     {
-        // Eğer zaten giriş yapmışsa admin paneline yönlendir
-        if ($this->isAdminLoggedIn()) {
-            $this->redirect('/admin/orders');
-            return;
+        $data = ['pageTitle' => 'Admin Girişi'];
+
+        if (self::isAdminLoggedIn()) {
+            // Instead of PHP redirect, set a flag for the view to handle with JS
+            $data['redirectToAdminAfterDelay'] = true;
+            // No PHP redirect here: // $this->redirect('/admin'); 
+            // The return; is also not strictly needed anymore if not redirecting, 
+            // but keeping it doesn't harm if we imagine other logic might be added.
         }
-        $this->view('auth/login', ['pageTitle' => 'Admin Girişi'], 'main'); // Basit bir login view kullanalım
+        
+        $this->view('auth/login', $data, 'main'); 
     }
 
     /**
@@ -27,26 +34,38 @@ class AuthController extends BaseController
      */
     public function login(): void
     {
-        if ($this->isAdminLoggedIn()) {
-            $this->redirect('/admin/orders');
-            return;
+        if (self::isAdminLoggedIn()) {
+            $this->redirect('/admin');
+            exit; // Ensure script termination
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/login');
+            exit; // Ensure script termination
         }
 
         $username = $this->sanitize($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? ''; // Şifreyi sanitize etmiyoruz (karşılaştırma için ham hali lazım)
+        $password = $_POST['password'] ?? ''; // Password is not sanitized for comparison
 
         if ($username === self::ADMIN_USERNAME && $password === self::ADMIN_PASSWORD) {
-            // Giriş başarılı, session başlat
             $_SESSION['is_admin'] = true;
-            session_write_close(); // Session yazmayı kapat
-            header('Location: /admin/orders'); // Doğrudan yönlendirme
-            exit; // Betiği sonlandır
+            session_regenerate_id(true); // Regenerate session ID for security
+            
+            // -- Add these lines for debugging --
+            error_log('DEBUG: Admin login success. Session is_admin set to: ' . (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] ? 'true' : 'false (or not set)'));
+            error_log('DEBUG: Session ID after regenerate: ' . session_id());
+            error_log('DEBUG: Attempting redirect to /admin from AuthController.');
+            // -- End of added lines --
+            
+            $this->redirect('/admin'); // Redirect to admin dashboard
+            exit; // Crucial: ensure no further script execution interferes with redirect
         } else {
-            // Giriş başarısız
-            $_SESSION['login_error'] = 'Geçersiz kullanıcı adı veya şifre.';
-            session_write_close(); // Session yazmayı kapat
-            header('Location: /login'); // Doğrudan yönlendirme
-            exit; // Betiği sonlandır
+            $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Geçersiz kullanıcı adı veya şifre.'];
+            // -- Add this line for debugging failed attempts --
+            error_log('DEBUG: Admin login failed. Username entered: [' . $username . '], Password entered: [hidden]');
+            // -- End of added line --
+            $this->redirect('/login');
+            exit; // Crucial: ensure no further script execution interferes with redirect
         }
     }
 
@@ -55,31 +74,36 @@ class AuthController extends BaseController
      */
     public function logout(): void
     {
-        session_unset(); // Tüm session değişkenlerini sil
-        session_destroy(); // Session'ı yok et
-        $this->redirect('/login'); // Giriş sayfasına yönlendir
+        unset($_SESSION['is_admin']);
+        session_regenerate_id(true);
+        $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Başarıyla çıkış yaptınız.'];
+        $this->redirect('/login');
+        exit; // Ensure no further script execution after redirect
     }
 
     /**
      * Adminin giriş yapıp yapmadığını kontrol eder.
      */
     public static function isAdminLoggedIn(): bool
-    { return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
+    {
+        return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
     }
 
     /**
      * Admin değilse giriş sayfasına yönlendirir.
-     * Controller içinde veya router'da middleware olarak kullanılabilir.
      */
     public static function requireAdmin(): void
     {
         if (!self::isAdminLoggedIn()) {
-            // Hata mesajı ayarlanabilir
-            $_SESSION['auth_error'] = 'Bu sayfaya erişmek için giriş yapmalısınız.';
-            header('Location: /login'); // BaseController'daki redirect burada kullanılamaz (statik metod)
+            $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Bu sayfaya erişmek için giriş yapmalısınız.'];
+            // In a static method, BaseController's redirect isn't available directly via $this
+            // So we use a direct header call.
+            header('Location: /login'); 
             exit;
         }
     }
+    
+    // Removed: showRegistrationForm(), register(), isLoggedIn(), getCurrentUser(), getCurrentUserType(), requireLogin()
 }
 
 ?> 

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\BaseController;
 use \RedBeanPHP\R as R;
+use App\Controllers\UserAuthController;
 
 class MenuController extends BaseController
 {
@@ -12,6 +13,8 @@ class MenuController extends BaseController
      */
     public function index(): void
     {
+        UserAuthController::requireUserLogin();
+
         // Kategorileri çek
         $categories = R::findAll('category', 'ORDER BY name ASC');
         
@@ -29,10 +32,14 @@ class MenuController extends BaseController
             }
         }
 
+        // Aktif masaları çek
+        $activeTables = R::findAll('table', 'is_active = ? ORDER BY name ASC', [true]);
+
         $this->view('menu', [
             'pageTitle' => 'Menü',
             'categories' => $categories,
-            'productsByCategory' => $productsByCategory
+            'productsByCategory' => $productsByCategory,
+            'activeTables' => $activeTables // Aktif masaları view'e gönder
         ]);
     }
 }

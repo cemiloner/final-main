@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+// ob_start(); // ÇIKTI ARABELLEĞE ALMA ARTIK GEREKLİ DEĞİL
 
 // Proje Kök Dizinini Tanımla
 define('ROOT_PATH', dirname(__DIR__));
@@ -39,4 +40,7 @@ $requestMethod = $_SERVER['REQUEST_METHOD'];
 // Rotaları dispatch et
 $router->dispatch($requestUri, $requestMethod);
 
-?> 
+// Arabellek debug kodları kaldırıldı
+// $output = ob_get_contents();
+// file_put_contents(__DIR__ . '/output_debug.txt', $output);
+// ob_end_flush(); 

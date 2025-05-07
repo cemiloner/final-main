@@ -17,6 +17,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Müşteri</th>
+                        <th>Masa</th>
                         <th>Ürünler</th>
                         <th>Tutar</th>
                         <th>Zaman</th>
@@ -28,6 +29,7 @@
                         <tr>
                             <td data-label="ID"><?php echo $order['id']; ?></td>
                             <td data-label="Müşteri"><?php echo $order['customer_info']; // Sanitized in controller ?></td>
+                            <td data-label="Masa"><?php echo $order['table_name'] ?? 'N/A'; ?></td>
                             <td data-label="Ürünler">
                                 <?php if (!empty($order['items'])): ?>
                                     <ul>

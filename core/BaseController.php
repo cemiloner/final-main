@@ -37,7 +37,6 @@ abstract class BaseController
             // Daha iyi hata yönetimi eklenebilir
             echo "Error: View file '{$viewFile}' not found.";
         }
-        exit; // İşlem bittiğinde çıkış yap
     }
 
     /**
@@ -51,7 +50,6 @@ abstract class BaseController
         http_response_code($statusCode);
         header('Content-Type: application/json');
         echo json_encode($data);
-        exit; // JSON gönderdikten sonra çıkış yap
     }
 
     /**
@@ -61,8 +59,8 @@ abstract class BaseController
      */
     protected function redirect(string $url): void
     {
-        header("Location: {$url}");
-        exit;
+        $_SESSION['js_redirect_url'] = $url;
+        error_log('[BaseController] js_redirect_url set to: ' . $url);
     }
 
     // Input sanitizasyonu için basit bir yardımcı (gerektiğinde genişletilebilir)
@@ -75,6 +73,4 @@ abstract class BaseController
         }
         return $data;
     }
-}
-
-?> 
+} 

@@ -12,6 +12,22 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             showMessage(orderMessageDiv, '', '');
+            const tableSelectionError = document.getElementById('table-selection-error');
+            showMessage(tableSelectionError, '', ''); // Masa seçim hatasını temizle
+
+            // Masa seçimi kontrolü
+            const selectedTableIdElement = document.getElementById('selected_table_id');
+            const selectedTableId = selectedTableIdElement ? selectedTableIdElement.value : null;
+
+            if (!selectedTableId) {
+                if (selectedTableIdElement) { // Element varsa ve seçilmemişse hata göster
+                     showMessage(tableSelectionError, 'Lütfen sipariş vermek için bir masa seçin.', 'error');
+                } else { // Element hiç yoksa (beklenmedik durum) genel mesaj
+                    showMessage(orderMessageDiv, 'Masa seçimi yapılamadı. Lütfen sayfayı yenileyin.', 'error');
+                }
+                return;
+            }
+
             const productId = this.dataset.productId;
             const quantityInput = this.querySelector('input[name="quantity"]');
             const quantity = quantityInput ? quantityInput.value : 1;
@@ -26,15 +42,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({ product_id: productId, quantity: quantity })
+                body: JSON.stringify({ 
+                    product_id: productId, 
+                    quantity: quantity,
+                    table_id: selectedTableId // Masa ID'sini ekle
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                if (data.redirect_to_userlogin) {
+                    showMessage(orderMessageDiv, 'Sipariş vermek için giriş yapmanız gerekiyor. Yönlendiriliyorsunuz...', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/userlogin';
+                    }, 2000); // 2 saniye sonra yönlendir
+                } else if (data.success) {
                     showMessage(orderMessageDiv, `Siparişiniz alındı: ${data.message}`, 'success');
                     if (quantityInput) quantityInput.value = 1;
                 } else {
-                    showMessage(orderMessageDiv, `Hata: ${data.message}`, 'error');
+                    showMessage(orderMessageDiv, `Hata: ${data.message || 'Bilinmeyen bir hata oluştu.'}`, 'error');
                 }
             })
             .catch(error => {
@@ -484,6 +509,189 @@ document.addEventListener('DOMContentLoaded', function() {
                  deleteButton.innerHTML = originalButtonHTML;
             });
         });
+    }
+
+    // --- Admin Masa Ekleme --- //
+    const addTableForm = document.getElementById('add-table-form');
+    const tableMessageDiv = document.getElementById('table-message');
+    const tableListContainer = document.getElementById('table-list-container');
+    const tableListMessageDiv = document.getElementById('table-list-message'); // Ayrı mesaj alanı liste için
+
+    if (addTableForm) {
+        addTableForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showMessage(tableMessageDiv, '', '');
+            const tableNameInput = this.querySelector('#table_name');
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams(new FormData(this)).toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(tableMessageDiv, data.message, 'success');
+                    tableNameInput.value = ''; // Input'u temizle
+                    // Yeni masayı listeye ekle (eğer liste görünürse)
+                    if (tableListContainer && data.new_table) {
+                        // Eğer "Henüz hiç masa eklenmemiş." mesajı varsa onu kaldır
+                        const noTablesMessage = tableListContainer.closest('.card-body').querySelector('p.text-center');
+                        if (noTablesMessage) noTablesMessage.remove();
+                        // Eğer tablo henüz yoksa, <thead>'i de ekle (bu senaryo zor, genellikle thead hep olur)
+
+                        tableListContainer.insertAdjacentHTML('beforeend', createTableRowHTML(data.new_table));
+                        showMessage(tableListMessageDiv, '', ''); // Liste mesajını temizle
+                    }
+                    // Form mesajını 2 saniye sonra temizle
+                    setTimeout(() => showMessage(tableMessageDiv, '', ''), 2000);
+                } else {
+                    showMessage(tableMessageDiv, data.message || 'Bir hata oluştu.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Masa ekleme hatası:', error);
+                showMessage(tableMessageDiv, 'Bir sunucu hatası oluştu. Lütfen geliştirici konsolunu kontrol edin.', 'error');
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+            });
+        });
+    }
+
+    // Masa listesi için satır HTML'i oluşturan yardımcı fonksiyon
+    function createTableRowHTML(table) {
+        const isActiveText = table.is_active ? 'Aktif' : 'Pasif';
+        const isActiveBadge = table.is_active ? 'badge-success' : 'badge-danger';
+        const toggleButtonIcon = table.is_active ? 'fa-toggle-off' : 'fa-toggle-on';
+        const toggleButtonText = table.is_active ? 'Pasif Yap' : 'Aktif Yap';
+
+        return `
+            <tr data-table-id="${table.id}">
+                <td>${table.id}</td>
+                <td>${table.name}</td> <!-- name zaten controller'da escape edildi -->
+                <td><span class="badge ${isActiveBadge}">${isActiveText}</span></td>
+                <td class="project-actions text-right">
+                    <button class="btn btn-sm btn-secondary table-toggle-status-btn"
+                            data-table-id="${table.id}"
+                            data-current-status="${table.is_active ? '1' : '0'}">
+                        <i class="fas ${toggleButtonIcon}"></i> ${toggleButtonText}
+                    </button>
+                    <button class="btn btn-danger btn-sm table-delete-btn"
+                            data-table-id="${table.id}"
+                            data-table-name="${table.name}">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    // --- Admin Masa Silme ve Durum Değiştirme --- //
+    if (tableListContainer) { // Bu container hem ekleme hem silme/durum için kullanılacak
+        tableListContainer.addEventListener('click', function(e) {
+            let targetButton = null;
+            let action = null;
+
+            if (e.target.matches('.table-delete-btn') || e.target.closest('.table-delete-btn')) {
+                targetButton = e.target.closest('.table-delete-btn');
+                action = 'delete';
+            } else if (e.target.matches('.table-toggle-status-btn') || e.target.closest('.table-toggle-status-btn')) {
+                targetButton = e.target.closest('.table-toggle-status-btn');
+                action = 'toggle-status';
+            }
+
+            if (!targetButton || !action) return;
+
+            const tableId = targetButton.dataset.tableId;
+            const row = targetButton.closest('tr[data-table-id]');
+            
+            showMessage(tableListMessageDiv, '', ''); // Önceki genel liste mesajlarını temizle
+
+            if (action === 'delete') {
+                const tableName = targetButton.dataset.tableName || 'bu masayı';
+                if (!confirm(`'${tableName}' silmek istediğinizden emin misiniz? Bu masada aktif siparişler varsa silme işlemi başarısız olacaktır.`)) {
+                    return;
+                }
+            }
+            // Durum değiştirme için direkt onay gerekmiyor, buton zaten ne yapacağını söylüyor.
+
+            const originalButtonHTML = targetButton.innerHTML;
+            targetButton.disabled = true;
+            targetButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            let fetchUrl = '';
+            const formData = new URLSearchParams();
+            formData.append('table_id', tableId);
+
+            if (action === 'delete') {
+                fetchUrl = '/admin/tables/delete';
+            } else { // toggle-status
+                fetchUrl = '/admin/tables/toggle-status';
+                // Toggle için ekstra bir data göndermeye gerek yok, controller ID'den anlar.
+            }
+
+            fetch(fetchUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(tableListMessageDiv, data.message, 'success');
+                    if (action === 'delete') {
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s ease-out';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 300);
+                        }
+                    } else { // toggle-status
+                        if (row && typeof data.new_status !== 'undefined') {
+                            updateTableRowStatus(row, data.new_status);
+                        }
+                    }
+                    setTimeout(() => showMessage(tableListMessageDiv, '', ''), 2500);
+                } else {
+                    showMessage(tableListMessageDiv, data.message || 'Bir hata oluştu.', 'error');
+                    targetButton.disabled = false;
+                    targetButton.innerHTML = originalButtonHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Masa işlemi hatası:', error);
+                showMessage(tableListMessageDiv, 'Bir sunucu hatası oluştu.', 'error');
+                targetButton.disabled = false;
+                targetButton.innerHTML = originalButtonHTML;
+            });
+        });
+    }
+
+    // Masa satırının durumunu (badge ve buton metni/ikonu) güncelleyen yardımcı fonksiyon
+    function updateTableRowStatus(row, isActive) {
+        const statusBadge = row.querySelector('.badge');
+        const toggleButton = row.querySelector('.table-toggle-status-btn');
+
+        if (statusBadge) {
+            statusBadge.textContent = isActive ? 'Aktif' : 'Pasif';
+            statusBadge.className = `badge ${isActive ? 'badge-success' : 'badge-danger'}`;
+        }
+        if (toggleButton) {
+            toggleButton.dataset.currentStatus = isActive ? '1' : '0';
+            toggleButton.innerHTML = isActive ? '<i class="fas fa-toggle-off"></i> Pasif Yap' : '<i class="fas fa-toggle-on"></i> Aktif Yap';
+            toggleButton.disabled = false; // İşlem başarılı olduğu için butonu tekrar aktif et
+        }
     }
 
 }); // End of DOMContentLoaded

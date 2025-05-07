@@ -5,6 +5,7 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
 // Layout için başlık ayarla (opsiyonel, BaseController'da yapılabilir)
 // $this->pageTitle = 'Menü';
 
+// $activeTables MenuController tarafından gönderiliyor.
 ?>
 
 <h2><?php echo htmlspecialchars($pageTitle ?? 'Menü'); ?></h2>
@@ -13,7 +14,29 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
     <!-- AJAX mesajları buraya gelecek -->
 </div>
 
-<div id="menu-container">
+<!-- Masa Seçim Alanı -->
+<div id="table-selection-section" class="card mb-3">
+    <div class="card-body">
+        <h3 class="card-title"><i class="fas fa-chair"></i> Masa Seçimi</h3>
+        <?php if (!empty($activeTables)): ?>
+            <div class="form-group">
+                <label for="selected_table_id">Lütfen Sipariş İçin Bir Masa Seçin:</label>
+                <select id="selected_table_id" name="selected_table_id" class="form-control">
+                    <option value="">-- Masa Seçiniz --</option>
+                    <?php foreach ($activeTables as $table): ?>
+                        <option value="<?php echo $table->id; ?>"><?php echo htmlspecialchars($table->name); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <small id="table-selection-error" class="error-text" style="display: none;">Lütfen bir masa seçin.</small>
+            </div>
+        <?php else: ?>
+            <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Şu anda aktif masa bulunmamaktadır. Lütfen bir masa eklenmesini bekleyin veya yöneticiyle iletişime geçin.</p>
+        <?php endif; ?>
+    </div>
+</div>
+<!-- /Masa Seçim Alanı -->
+
+<div id="menu-container" <?php echo empty($activeTables) ? 'style="display:none;"' : ''; ?> > <!-- Aktif masa yoksa menüyü gizle -->
     <?php if (!empty($categories) && !empty($productsByCategory)): ?>
         <?php foreach ($categories as $category): ?>
             <?php if (!empty($productsByCategory[$category->id])): ?>

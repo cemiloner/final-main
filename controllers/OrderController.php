@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\BaseController;
 use \RedBeanPHP\R as R;
+use App\Controllers\UserAuthController; // Added for login checks
 
 class OrderController extends BaseController
 {
@@ -12,8 +13,32 @@ class OrderController extends BaseController
      */
     public function store(): void
     {
+        // Müşteri girişi kontrol et
+        if (!UserAuthController::isUserLoggedIn()) {
+            $this->jsonResponse([
+                'success' => false, 
+                'message' => 'Sipariş vermek için lütfen giriş yapınız.',
+                'redirect_to_userlogin' => true
+            ], 401); // 401 Unauthorized
+            return;
+        }
+
+        $currentUser = UserAuthController::getLoggedInUser();
+        if (!$currentUser || !isset($currentUser['id'])) {
+            // Bu durum normalde isUserLoggedIn() tarafından yakalanmalı ama ekstra kontrol
+            $this->jsonResponse(['success' => false, 'message' => 'Geçerli kullanıcı bilgisi alınamadı.'], 403); // 403 Forbidden
+            return;
+        }
+
         // Gelen JSON verisini al
         $input = json_decode(file_get_contents('php://input'), true);
+
+        // Yeni: Masa ID'sini al ve doğrula
+        $tableId = filter_var($input['table_id'] ?? null, FILTER_VALIDATE_INT);
+        if (!$tableId) {
+            $this->jsonResponse(['success' => false, 'message' => 'Lütfen geçerli bir masa seçin.'], 400);
+            return;
+        }
 
         // Basit doğrulama ve sanitizasyon
         $productId = filter_var($input['product_id'] ?? null, FILTER_VALIDATE_INT);
@@ -52,8 +77,9 @@ class OrderController extends BaseController
             
             // Yeni sipariş oluştur
             $order = R::dispense('order');
-            $order->customer_info = 'Placeholder Customer'; // TODO: Gerçek müşteri bilgisi eklenmeli
-            $order->status = 'bekliyor'; // Başlangıç durumu: Bekliyor
+            $order->user = R::load('user', $currentUser['id']); 
+            $order->table = R::load('table', $tableId); // Seçilen masayı siparişe bağla
+            $order->status = 'bekliyor'; 
             $order->created_at = date('Y-m-d H:i:s');
             $order->total_price = 0; 
 
@@ -82,10 +108,52 @@ class OrderController extends BaseController
 
         } catch (\Exception $e) {
             R::rollback(); // Hata olursa geri al
-            error_log("Order creation error: " . $e->getMessage());
+            error_log("Order creation error: " . $e->getMessage() . " User ID: " . ($currentUser['id'] ?? 'N/A'));
             $this->jsonResponse(['success' => false, 'message' => 'Sipariş oluşturulurken bir sunucu hatası oluştu.'], 500);
+        }
+    }
+
+    public function placeOrder(): void
+    {
+        if (empty($_SESSION['cart'])) {
+            $this->jsonResponse(['success' => false, 'message' => 'Sepetiniz boş.'], 400);
+            return;
+        }
+
+        try {
+            R::begin();
+
+            $order = R::dispense('order');
+            $order->user_id = $_SESSION['user_id'] ?? null; // Kullanıcı oturumu varsa
+            $order->status = 'bekliyor';
+            $order->created_at = date('Y-m-d H:i:s');
+            $order->total_price = 0;
+
+            foreach ($_SESSION['cart'] as $productId => $quantity) {
+                $product = R::load('product', $productId);
+                if (!$product->id) {
+                    throw new \Exception('Ürün bulunamadı.');
+                }
+
+                $orderItem = R::dispense('orderitem');
+                $orderItem->product = $product;
+                $orderItem->quantity = $quantity;
+                $orderItem->price_per_item = $product->price;
+                $order->ownOrderitemList[] = $orderItem;
+
+                $order->total_price += $product->price * $quantity;
+            }
+
+            R::store($order);
+            R::commit();
+
+            unset($_SESSION['cart']); // Sepeti temizle
+            $this->jsonResponse(['success' => true, 'message' => 'Siparişiniz başarıyla oluşturuldu.']);
+        } catch (\Exception $e) {
+            R::rollback();
+            $this->jsonResponse(['success' => false, 'message' => 'Sipariş oluşturulurken bir hata oluştu.'], 500);
         }
     }
 }
 
-?> 
+?>

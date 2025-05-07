@@ -1,0 +1,54 @@
+ <!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Girişi</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="/"><i class="fas fa-birthday-cake"></i> Pastane Sipariş</a></h1>
+            <nav>
+                <a href="/menu"><i class="fas fa-book-open"></i> Menü</a>
+                                     <a href="/userlogout"><i class="fas fa-sign-out-alt"></i> Müşteri Çıkış</a>
+                                <a href="/login"><i class="fas fa-user-shield"></i> Admin</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <div class="login-container card">
+    <div class="card-body">
+        <h2 class="text-center">Admin Girişi</h2>
+
+                    <div class="message message-success">
+                <i class="fas fa-check-circle"></i> 
+                Başarıyla çıkış yaptınız.            </div>
+        
+        <form action="/login" method="POST">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="username">Kullanıcı Adı:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="password">Şifre:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
+        </form>
+    </div>
+
+    
+</div>         </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Pastane Sipariş Sistemi</p>
+    </footer>
+    <script src="/js/app.js"></script>
+
+
+</body>
+</html> 

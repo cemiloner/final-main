@@ -79,8 +79,9 @@ class AdminProductController extends BaseController
                 $_SESSION['form_errors'] = $errors;
                 $_SESSION['form_data'] = $_POST;
                 $this->redirect('/admin/products/create');
+                exit; // Ensure script termination
             }
-            return;
+            return; // This return is now redundant if exit is used above for non-AJAX, but fine for AJAX path.
         }
 
         // Yeni ürün bean'i oluştur
@@ -101,6 +102,7 @@ class AdminProductController extends BaseController
             } else {
                 $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Ürün başarıyla eklendi.'];
                 $this->redirect('/admin/products');
+                exit; // Ensure script termination
             }
         } catch (\Exception $e) {
             error_log("Product store error: " . $e->getMessage());
@@ -109,6 +111,7 @@ class AdminProductController extends BaseController
             } else {
                 $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Ürün eklenirken bir hata oluştu.'];
                 $this->redirect('/admin/products/create'); // Hata durumunda forma geri dön
+                exit; // Ensure script termination
             }
         }
     }
@@ -122,7 +125,7 @@ class AdminProductController extends BaseController
         if (!$productId) {
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Geçersiz Ürün ID.'];
             $this->redirect('/admin/products');
-            return;
+            exit; // Ensure script termination
         }
 
         $product = R::findOne('product', 'id = ?', [$productId]);
@@ -130,7 +133,7 @@ class AdminProductController extends BaseController
         if (!$product) {
             $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Ürün bulunamadı.'];
             $this->redirect('/admin/products');
-            return;
+            exit; // Ensure script termination
         }
 
         $categories = R::findAll('category', 'ORDER BY name ASC');
@@ -183,8 +186,9 @@ class AdminProductController extends BaseController
                 $_SESSION['form_errors'] = $errors;
                 $_SESSION['form_data'] = $_POST;
                 $this->redirect('/admin/products/edit?id=' . $productId);
+                exit; // Ensure script termination
             }
-            return;
+            return; // Redundant for non-AJAX, fine for AJAX.
         }
 
         // Ürün bean'ini güncelle
@@ -203,6 +207,7 @@ class AdminProductController extends BaseController
             } else {
                 $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Ürün başarıyla güncellendi.'];
                 $this->redirect('/admin/products');
+                exit; // Ensure script termination
             }
         } catch (\Exception $e) {
             error_log("Product update error: " . $e->getMessage());
@@ -211,6 +216,7 @@ class AdminProductController extends BaseController
             } else {
                  $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Ürün güncellenirken bir hata oluştu.'];
                  $this->redirect('/admin/products/edit?id=' . $productId); // Hata durumunda forma geri dön
+                 exit; // Ensure script termination
             }
         }
     }
@@ -227,11 +233,14 @@ class AdminProductController extends BaseController
             $message = 'Geçersiz Ürün ID.';
             if ($isAjax) {
                 $this->jsonResponse(['success' => false, 'message' => $message], 400);
+                return; // For AJAX, return is fine after jsonResponse
             } else {
                 $_SESSION['flash_message'] = ['type' => 'error', 'text' => $message];
                 $this->redirect('/admin/products');
+                exit; // Ensure script termination for non-AJAX
             }
-            return;
+            // The return below was for the whole function if !$productId. 
+            // Now handled by exit in non-AJAX and return in AJAX.
         }
 
         try {
@@ -244,8 +253,11 @@ class AdminProductController extends BaseController
                     $message = 'Bu ürün aktif siparişlerde kullanıldığı için silinemez.';
                      if ($isAjax) {
                         $this->jsonResponse(['success' => false, 'message' => $message], 409); // 409 Conflict
+                        return; // For AJAX
                     } else {
                         $_SESSION['flash_message'] = ['type' => 'error', 'text' => $message];
+                        $this->redirect('/admin/products'); // Redirect if cannot delete and not AJAX
+                        exit; // Ensure script termination
                     }
                 } else {
                     // İlişkili sipariş yoksa sil
@@ -259,6 +271,8 @@ class AdminProductController extends BaseController
                         $this->jsonResponse(['success' => true, 'message' => $message]);
                     } else {
                         $_SESSION['flash_message'] = ['type' => 'success', 'text' => $message];
+                        $this->redirect('/admin/products');
+                        exit; // Ensure script termination
                     }
                 }
             } else {
@@ -267,6 +281,8 @@ class AdminProductController extends BaseController
                     $this->jsonResponse(['success' => false, 'message' => $message], 404);
                 } else {
                     $_SESSION['flash_message'] = ['type' => 'error', 'text' => $message];
+                    $this->redirect('/admin/products');
+                    exit; // Ensure script termination
                 }
             }
         } catch (\Exception $e) {
@@ -276,12 +292,9 @@ class AdminProductController extends BaseController
                 $this->jsonResponse(['success' => false, 'message' => $message], 500);
             } else {
                 $_SESSION['flash_message'] = ['type' => 'error', 'text' => $message];
+                $this->redirect('/admin/products');
+                exit; // Ensure script termination
             }
-        }
-        
-        // Sadece non-AJAX isteklerinde yönlendir
-        if (!$isAjax) {
-            $this->redirect('/admin/products');
         }
     }
 

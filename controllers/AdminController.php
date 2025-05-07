@@ -75,32 +75,55 @@ class AdminController extends BaseController
     {
         $ordersData = [];
         foreach ($ordersBeans as $orderBean) {
-            // performansı artırmak için eager loading deneyebiliriz ama RedbeanPHP'de doğrudan yok
-            // N+1 sorgu problemi olabilir. Çok fazla sipariş varsa optimizasyon gerekebilir.
             $orderItems = R::findAll('orderitem', 'order_id = ?', [$orderBean->id]);
             $itemsDetails = [];
             $totalPrice = 0;
             foreach ($orderItems as $item) {
-                $product = R::load('product', $item->product_id); // İlişkili ürünü yükle
+                $product = R::load('product', $item->product_id);
                 $itemData = [
                     'product_name' => $product->id ? htmlspecialchars($product->name) : '[Ürün Silinmiş]',
                     'product_exists' => (bool)$product->id,
                     'quantity' => $item->quantity,
-                    'price_per_item' => $item->price_per_item, // Sipariş anındaki fiyatı kullan
+                    'price_per_item' => $item->price_per_item,
                     'item_total' => $product->id ? ($item->price_per_item * $item->quantity) : 0
                 ];
                 $itemsDetails[] = $itemData;
                 $totalPrice += $itemData['item_total'];
             }
+
+            // Müşteri adını belirle
+            $customerDisplayName = 'Misafir / Kayıt Yok'; // Varsayılan
+            if (isset($orderBean->user_id) && $orderBean->user_id) {
+                $user = R::load('user', $orderBean->user_id);
+                if ($user->id) { // Kullanıcı başarıyla yüklendiyse
+                    $customerDisplayName = htmlspecialchars($user->username);
+                } else {
+                    $customerDisplayName = '[Kullanıcı Bulunamadı ID: ' . $orderBean->user_id . ']';
+                }
+            } elseif (!empty($orderBean->customer_info)) {
+                // user_id yoksa ve eski customer_info alanı doluysa onu kullan (eski siparişler için)
+                $customerDisplayName = htmlspecialchars($orderBean->customer_info) . ' (Eski Kayıt)';
+            }
+            
+            // Masa adını belirle
+            $tableName = '[Masa Belirtilmemiş]';
+            if (isset($orderBean->table_id) && $orderBean->table_id) {
+                $table = R::load('table', $orderBean->table_id);
+                if ($table->id) {
+                    $tableName = htmlspecialchars($table->name);
+                } else {
+                    $tableName = '[Masa Bulunamadı ID: ' . $orderBean->table_id . ']';
+                }
+            }
             
             $ordersData[] = [
                 'id' => $orderBean->id,
-                'customer_info' => htmlspecialchars($orderBean->customer_info),
+                'customer_info' => $customerDisplayName, 
+                'table_name' => $tableName, // Masa adını ekle
                 'status' => $orderBean->status,
                 'created_at' => $orderBean->created_at,
                 'items' => $itemsDetails,
-                // Toplam fiyatı doğrudan bean'den almak daha doğru olabilir, eğer OrderController'da doğru hesaplanıyorsa
-                'total_price' => $orderBean->total_price // $totalPrice yerine bean'deki değeri kullanalım
+                'total_price' => $orderBean->total_price
             ];
         }
         return $ordersData;
@@ -321,19 +344,11 @@ class AdminController extends BaseController
             exit; // İşlem bitti, script sonlansın
 
         } catch (\Exception $e) {
-            // Hata durumunda kullanıcıya bilgi ver (indirme başlamadıysa)
-            error_log("End of Day Process Error: " . $e->getMessage());
-            // İndirme başlıkları gönderilmediyse hata mesajı gösterebiliriz.
-            if (!headers_sent()) {
-                 // Basit bir hata sayfası veya mesajı gösterilebilir.
-                 // Bu senaryoda admin dashboard'a hata mesajıyla yönlendirmek daha iyi olabilir.
-                 $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Gün sonu işlemi sırasında bir hata oluştu: ' . $e->getMessage()];
-                 $this->redirect('/admin');
-                 exit;
-            } else {
-                // Başlıklar zaten gönderildiyse yapacak pek bir şey yok, loglama yeterli.
-                exit;
-            }
+            // Hata durumunda mesaj ve log
+            $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Gün sonu raporu oluşturulurken bir hata oluştu: ' . $this->sanitize($e->getMessage())];
+            error_log("End of day process error: " . $e->getMessage());
+            $this->redirect('/admin');
+            exit; // Ensure script termination after redirect
         }
     }
 }
