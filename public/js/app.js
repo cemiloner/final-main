@@ -5,73 +5,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderTableBody = document.querySelector('.orders-table tbody');
 
     // --- Sipariş Verme İşlemi (Müşteri Tarafı - Değişiklik Yok) --- //
-    const orderForms = document.querySelectorAll('.order-form');
-    const orderMessageDiv = document.getElementById('order-message');
-
-    orderForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            showMessage(orderMessageDiv, '', '');
-            const tableSelectionError = document.getElementById('table-selection-error');
-            showMessage(tableSelectionError, '', ''); // Masa seçim hatasını temizle
-
-            // Masa seçimi kontrolü
-            const selectedTableIdElement = document.getElementById('selected_table_id');
-            const selectedTableId = selectedTableIdElement ? selectedTableIdElement.value : null;
-
-            if (!selectedTableId) {
-                if (selectedTableIdElement) { // Element varsa ve seçilmemişse hata göster
-                     showMessage(tableSelectionError, 'Lütfen sipariş vermek için bir masa seçin.', 'error');
-                } else { // Element hiç yoksa (beklenmedik durum) genel mesaj
-                    showMessage(orderMessageDiv, 'Masa seçimi yapılamadı. Lütfen sayfayı yenileyin.', 'error');
-                }
-                return;
-            }
-
-            const productId = this.dataset.productId;
-            const quantityInput = this.querySelector('input[name="quantity"]');
-            const quantity = quantityInput ? quantityInput.value : 1;
-            const button = this.querySelector('button');
-            const originalButtonText = button.textContent;
-            button.disabled = true;
-            button.textContent = 'İşleniyor...';
-
-            fetch('/order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ 
-                    product_id: productId, 
-                    quantity: quantity,
-                    table_id: selectedTableId // Masa ID'sini ekle
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect_to_userlogin) {
-                    showMessage(orderMessageDiv, 'Sipariş vermek için giriş yapmanız gerekiyor. Yönlendiriliyorsunuz...', 'error');
-                    setTimeout(() => {
-                        window.location.href = '/userlogin';
-                    }, 2000); // 2 saniye sonra yönlendir
-                } else if (data.success) {
-                    showMessage(orderMessageDiv, `Siparişiniz alındı: ${data.message}`, 'success');
-                    if (quantityInput) quantityInput.value = 1;
-                } else {
-                    showMessage(orderMessageDiv, `Hata: ${data.message || 'Bilinmeyen bir hata oluştu.'}`, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Sipariş verme hatası:', error);
-                showMessage(orderMessageDiv, 'Bir sunucu hatası oluştu. Lütfen tekrar deneyin.', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.textContent = originalButtonText;
-            });
-        });
-    });
+    // BU KISIM SİLİNDİ, ÇÜNKÜ menu.php İÇİNDEKİ SCRIPT HANDLE EDİYOR
+    // const orderForms = document.querySelectorAll('.order-form');
+    // const orderMessageDiv = document.getElementById('order-message');
+    // 
+    // orderForms.forEach(form => {
+    //     form.addEventListener('submit', function(e) {
+    //         e.preventDefault();
+    //         showMessage(orderMessageDiv, '', '');
+    //         const tableSelectionError = document.getElementById('table-selection-error');
+    //         showMessage(tableSelectionError, '', ''); // Masa seçim hatasını temizle
+    // 
+    //         // Masa seçimi kontrolü
+    //         const selectedTableIdElement = document.getElementById('selected_table_id');
+    //         const selectedTableId = selectedTableIdElement ? selectedTableIdElement.value : null;
+    // 
+    //         if (!selectedTableId) {
+    //             if (selectedTableIdElement) { // Element varsa ve seçilmemişse hata göster
+    //                  showMessage(tableSelectionError, 'Lütfen sipariş vermek için bir masa seçin.', 'error');
+    //             } else { // Element hiç yoksa (beklenmedik durum) genel mesaj
+    //                 showMessage(orderMessageDiv, 'Masa seçimi yapılamadı. Lütfen sayfayı yenileyin.', 'error');
+    //             }
+    //             return;
+    //         }
+    // 
+    //         const productId = this.dataset.productId;
+    //         const quantityInput = this.querySelector('input[name="quantity"]');
+    //         const quantity = quantityInput ? quantityInput.value : 1;
+    //         const button = this.querySelector('button');
+    //         const originalButtonText = button.textContent;
+    //         button.disabled = true;
+    //         button.textContent = 'İşleniyor...';
+    // 
+    //         fetch('/order', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'X-Requested-With': 'XMLHttpRequest'
+    //             },
+    //             body: JSON.stringify({ 
+    //                 product_id: productId, 
+    //                 quantity: quantity,
+    //                 table_id: selectedTableId // Masa ID'sini ekle
+    //             })
+    //         })
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             if (data.redirect_to_userlogin) {
+    //                 showMessage(orderMessageDiv, 'Sipariş vermek için giriş yapmanız gerekiyor. Yönlendiriliyorsunuz...', 'error');
+    //                 setTimeout(() => {
+    //                     window.location.href = '/userlogin';
+    //                 }, 2000); // 2 saniye sonra yönlendir
+    //             } else if (data.success) {
+    //                 showMessage(orderMessageDiv, `Siparişiniz alındı: ${data.message}`, 'success');
+    //                 if (quantityInput) quantityInput.value = 1;
+    //             } else {
+    //                 showMessage(orderMessageDiv, `Hata: ${data.message || 'Bilinmeyen bir hata oluştu.'}`, 'error');
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Sipariş verme hatası:', error);
+    //             showMessage(orderMessageDiv, 'Bir sunucu hatası oluştu. Lütfen tekrar deneyin.', 'error');
+    //         })
+    //         .finally(() => {
+    //             button.disabled = false;
+    //             button.textContent = originalButtonText;
+    //         });
+    //     });
+    // });
 
     // --- Admin Panel - Yeni Durum Güncelleme (Action Butonları) --- //
     if (orderTableBody) {
@@ -762,6 +763,174 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleButton.disabled = false; // İşlem başarılı olduğu için butonu tekrar aktif et
         }
     }
+
+    // --- Admin Dashboard - Aktif Siparişleri Otomatik Güncelleme --- //
+    // Bu kodun DOMContentLoaded içine taşınması daha iyi olabilir ama global scope'ta da çalışır.
+    // Eğer DOMContentLoaded dışındaysa, elementlerin varlığını kontrol etmesi önemlidir.
+    const activeOrdersTbody = document.getElementById('active-orders-tbody');
+    const activeOrdersMessageDiv = document.getElementById('active-orders-message'); 
+    const loadingIndicator = document.getElementById('loading-indicator');
+    let activeOrdersIntervalId = null;
+    let previousOrdersDataString = ''; 
+
+    function fetchAndUpdateActiveOrders() {
+        if (!activeOrdersTbody) return; 
+        
+        if(loadingIndicator) loadingIndicator.style.display = 'inline-block'; // Show spinner
+
+        fetch('/admin/api/active-orders') 
+            .then(response => {
+                if(loadingIndicator) loadingIndicator.style.display = 'none'; // Hide spinner on response
+                if (!response.ok) {
+                    throw new Error(`Sunucu yanıtı: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.orders) {
+                    const currentDataString = JSON.stringify(data.orders); 
+                    
+                    if (currentDataString !== previousOrdersDataString) {
+                         console.log('Aktif siparişler güncelleniyor...'); 
+                         activeOrdersTbody.innerHTML = ''; 
+
+                        if (data.orders.length === 0) {
+                            activeOrdersTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Şu anda aktif sipariş bulunmuyor.</td></tr>';
+                        } else {
+                            data.orders.forEach(order => {
+                                const row = document.createElement('tr');
+                                row.dataset.orderId = order.id; 
+                                
+                                const customerInfo = order.customer_info || 'Bilinmeyen';
+                                const tableName = order.table_name || '-';
+                                const itemsSummary = order.items.map(item => `${item.product_name} x ${item.quantity}`).join('<br>');
+                                const totalPrice = parseFloat(order.total_price || 0).toFixed(2);
+                                // Tarih formatlama - Tarayıcının lokalini kullanır, 'tr-TR' spesifik
+                                const createdAt = order.created_at ? new Date(order.created_at).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'; 
+                                const status = order.status || 'bilinmiyor';
+                                const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+                                row.innerHTML = `
+                                    <td data-label="ID">${order.id}</td>
+                                    <td data-label="Müşteri/Masa">${customerInfo} / ${tableName}</td>
+                                    <td data-label="Ürünler">${itemsSummary}</td>
+                                    <td data-label="Tutar"><strong>${totalPrice} TL</strong></td>
+                                    <td data-label="Zaman">${createdAt}</td>
+                                    <td data-label="Durum" class="order-status">
+                                        <span class="status-badge status-${status}">${statusText}</span>
+                                    </td>
+                                    <td data-label="İşlem" class="order-actions">
+                                        <a href="/admin/orders" class="btn btn-sm btn-info">Detay</a> 
+                                    </td>
+                                `;
+                                activeOrdersTbody.appendChild(row);
+                            });
+                        }
+                        previousOrdersDataString = currentDataString; 
+                    } else {
+                        // console.log('Aktif sipariş verisi değişmedi.'); // Debug
+                    }
+
+                    if (activeOrdersMessageDiv) showMessage(activeOrdersMessageDiv, '', ''); 
+                } else {
+                     throw new Error(data.message || 'Sipariş verisi alınamadı.');
+                }
+            })
+            .catch(error => {
+                console.error('Aktif siparişleri alma hatası:', error);
+                if(loadingIndicator) loadingIndicator.style.display = 'none'; // Hide spinner on error
+                if (activeOrdersMessageDiv) showMessage(activeOrdersMessageDiv, `Aktif siparişler yüklenemedi: ${error.message}`, 'error');
+            });
+    }
+
+    if (activeOrdersTbody) { 
+        fetchAndUpdateActiveOrders(); 
+        activeOrdersIntervalId = setInterval(fetchAndUpdateActiveOrders, 7000); 
+        console.log('Aktif sipariş takipçisi başlatıldı.');
+    }
+
+    // --- Admin Orders Page - Aktif Siparişleri Otomatik Güncelleme --- //
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminOrdersTableBody = document.getElementById('admin-orders-table-body');
+        const adminOrdersMessageDiv = document.getElementById('admin-orders-message');
+        const adminOrdersLoadingIndicator = document.getElementById('admin-orders-loading-indicator');
+        let adminOrdersIntervalId = null;
+        let previousAdminOrdersDataString = '';
+
+        if (!adminOrdersTableBody) { // Sadece /admin/orders sayfasında çalışsın
+            return;
+        }
+
+        function fetchAndUpdateAdminOrders() {
+            if (adminOrdersLoadingIndicator) adminOrdersLoadingIndicator.style.display = 'inline-block';
+
+            fetch('/admin/api/active-orders') // Aynı endpoint'i kullanıyoruz
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (adminOrdersLoadingIndicator) adminOrdersLoadingIndicator.style.display = 'none';
+
+                    if (data.success && data.orders) {
+                        const currentOrdersDataString = JSON.stringify(data.orders);
+                        if (currentOrdersDataString === previousAdminOrdersDataString) {
+                            // console.log('Admin Orders: No changes detected.');
+                            return; // Veri değişmedi, güncelleme yapma
+                        }
+                        previousAdminOrdersDataString = currentOrdersDataString;
+
+                        adminOrdersTableBody.innerHTML = ''; // Tabloyu temizle
+                        if (data.orders.length === 0) {
+                            showMessage(adminOrdersMessageDiv, 'Şu anda aktif sipariş bulunmuyor.', 'info');
+                            const placeholderRow = adminOrdersTableBody.insertRow();
+                            const placeholderCell = placeholderRow.insertCell();
+                            placeholderCell.colSpan = 8; // Tablodaki sütun sayısına göre ayarla
+                            placeholderCell.textContent = 'Aktif sipariş bulunmamaktadır.';
+                            placeholderCell.style.textAlign = 'center';
+                            placeholderCell.style.padding = '20px';
+                        } else {
+                            showMessage(adminOrdersMessageDiv, '', ''); // Varsa mesajı temizle
+                            data.orders.forEach(order => {
+                                // createOrderRowHTML global scope'ta tanımlı olmalı
+                                if (typeof createOrderRowHTML === 'function') {
+                                    adminOrdersTableBody.insertAdjacentHTML('beforeend', createOrderRowHTML(order));
+                                } else {
+                                    console.error('createOrderRowHTML fonksiyonu bulunamadı!');
+                                    // Fallback ya da basit bir satır oluşturma eklenebilir
+                                    const row = adminOrdersTableBody.insertRow();
+                                    row.insertCell().textContent = order.id;
+                                    row.insertCell().textContent = order.customer_info;
+                                    // ... diğer kolonlar eklenebilir
+                                }
+                            });
+                        }
+                    } else {
+                        showMessage(adminOrdersMessageDiv, data.message || 'Siparişler güncellenirken bir hata oluştu.', 'error');
+                    }
+                })
+                .catch(error => {
+                    if (adminOrdersLoadingIndicator) adminOrdersLoadingIndicator.style.display = 'none';
+                    console.error('Error fetching admin orders:', error);
+                    showMessage(adminOrdersMessageDiv, 'Siparişler yüklenemedi: ' + error.message, 'error');
+                });
+        }
+
+        // Sipariş durum güncelleme butonları için event delegation (zaten app.js içinde var, bu sadece bir hatırlatma)
+        // Eğer app.js'teki genel orders-table click listener'ı bu sayfadaki tabloyu da kapsıyorsa ekstra bir şey gerekmeyebilir.
+        // Aksi halde, buraya özel bir listener eklenebilir veya global listener'ın kapsaması sağlanabilir.
+
+        fetchAndUpdateAdminOrders(); // Sayfa yüklendiğinde ilk veriyi çek
+        adminOrdersIntervalId = setInterval(fetchAndUpdateAdminOrders, 7500); // 7.5 saniyede bir kontrol et (dashboard ile çakışmasın diye hafif farklı)
+
+        // Sayfadan ayrılırken interval'ı temizle (isteğe bağlı ama iyi pratik)
+        // window.addEventListener('beforeunload', () => {
+        //     if (adminOrdersIntervalId) clearInterval(adminOrdersIntervalId);
+        // });
+
+    }); // End of DOMContentLoaded for Admin Orders Page Auto-Update
 
 }); // End of DOMContentLoaded
 

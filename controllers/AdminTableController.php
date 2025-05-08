@@ -130,13 +130,14 @@ class AdminTableController extends BaseController
             }
 
             $table->is_active = !$table->is_active; // Durumu tersine çevir
+
             $table->updated_at = date('Y-m-d H:i:s');
             R::store($table);
 
             $this->jsonResponse([
                 'success' => true, 
                 'message' => 'Masa durumu başarıyla güncellendi.', 
-                'new_status' => $table->is_active, // Yeni durumu JS'e bildir
+                'new_status' => $table->is_active, // Yeni durumu JS'e bildir (original, without explicit bool cast here)
                 'table_id' => $table->id
             ]);
 

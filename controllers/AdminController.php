@@ -130,6 +130,30 @@ class AdminController extends BaseController
     }
 
     /**
+     * Aktif siparişleri JSON formatında döndürür (AJAX için).
+     */
+    public function activeOrdersJson(): void
+    {
+        try {
+            // Aktif durumdaki siparişleri çek
+            $statusPlaceholders = R::genSlots($this->activeStatuses);
+            $ordersBeans = R::findAll('order', "status IN ($statusPlaceholders) ORDER BY created_at DESC", $this->activeStatuses);
+            
+            // Veriyi formatla (prepareOrdersData zaten htmlspecialchars uyguluyor)
+            $ordersData = $this->prepareOrdersData($ordersBeans);
+
+            $this->jsonResponse([
+                'success' => true,
+                'orders' => $ordersData
+            ]);
+
+        } catch (\Exception $e) {
+            error_log("Active orders JSON error: " . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Aktif siparişler alınırken bir sunucu hatası oluştu.'], 500);
+        }
+    }
+
+    /**
      * Sipariş durumunu günceller (AJAX ile çağrılır).
      */
     public function updateOrderStatus(): void
@@ -350,6 +374,57 @@ class AdminController extends BaseController
             $this->redirect('/admin');
             exit; // Ensure script termination after redirect
         }
+    }
+
+    /**
+     * Deletes all archived orders (status 'delivered' or 'cancelled').
+     */
+    public function deleteAllArchivedOrders(): void
+    {
+        AuthController::requireAdmin(); // Ensure admin is logged in
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Geçersiz istek yöntemi.'];
+            $this->redirect('/admin/orders/archived');
+            exit;
+        }
+
+        try {
+            // Find all orders with archived statuses
+            $statusPlaceholders = R::genSlots($this->archivedStatuses);
+            $archivedOrders = R::findAll('order', "status IN ($statusPlaceholders)", $this->archivedStatuses);
+
+            if (empty($archivedOrders)) {
+                $_SESSION['flash_message'] = ['type' => 'info', 'text' => 'Silinecek arşivlenmiş sipariş bulunamadı.'];
+                $this->redirect('/admin/orders/archived');
+                exit;
+            }
+
+            $deletedCount = 0;
+            R::begin(); // Start transaction
+
+            foreach ($archivedOrders as $orderBean) {
+                // Delete associated order items first
+                $orderItems = R::find('orderitem', 'order_id = ?', [$orderBean->id]);
+                R::trashAll($orderItems);
+                
+                // Then delete the order itself
+                R::trash($orderBean);
+                $deletedCount++;
+            }
+
+            R::commit(); // Commit transaction
+
+            $_SESSION['flash_message'] = ['type' => 'success', 'text' => $deletedCount . ' adet arşivlenmiş sipariş başarıyla silindi.'];
+        
+        } catch (\Exception $e) {
+            R::rollback(); // Rollback transaction on error
+            error_log("Error deleting all archived orders: " . $e->getMessage());
+            $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Arşivlenmiş siparişler silinirken bir hata oluştu.'];
+        }
+
+        $this->redirect('/admin/orders/archived');
+        exit;
     }
 }
 

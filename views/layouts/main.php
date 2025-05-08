@@ -7,6 +7,7 @@ use App\Controllers\UserAuthController; // Make controller available
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Pastane Sipariş'; ?></title>
+    <link rel="icon" href="/images/cake.png" type="image/png" sizes="any">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>

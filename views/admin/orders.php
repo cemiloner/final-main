@@ -6,12 +6,20 @@
 <h2><?php echo htmlspecialchars($pageTitle); ?></h2>
 
 <div id="update-message" class="message" style="display: none;">
-    <!-- AJAX mesajları buraya gelecek -->
+    <!-- AJAX mesajları buraya gelecek (genel durum güncellemeleri) -->
+</div>
+
+<div id="admin-orders-message" class="message" style="display: none; margin-bottom: 15px;">
+    <!-- Tablo güncelleme mesajları buraya gelecek -->
 </div>
 
 <p><a href="/admin/orders/archived">Arşivlenmiş Siparişleri Görüntüle</a></p>
 
 <div class="orders-table-container card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h5>Aktif Siparişler</h5>
+        <i class="fas fa-sync fa-spin" id="admin-orders-loading-indicator" style="display: none; font-size: 1.2em;"></i>
+    </div>
     <div class="card-body" style="padding: 0;">
         <?php if (empty($orders)): ?>
             <p style="padding: 15px;">Gösterilecek aktif sipariş bulunamadı.</p>
@@ -29,7 +37,7 @@
                         <th>İşlem</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="admin-orders-table-body">
                     <?php foreach ($orders as $order): ?>
                         <tr data-order-id="<?php echo $order['id']; ?>">
                             <td data-label="ID"><?php echo $order['id']; ?></td>

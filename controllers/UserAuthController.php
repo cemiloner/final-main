@@ -6,7 +6,8 @@ use App\Core\BaseController;
 use \RedBeanPHP\R as R;
 include("userlogin.php");
 include("userregister.php");
-include("menu.php");
+//include("menu.php");
+include("home.php");
 class UserAuthController extends BaseController
 {
     /**
@@ -15,7 +16,7 @@ class UserAuthController extends BaseController
     public function showUserLoginForm(): void
     {
         if (self::isUserLoggedIn()) {
-            $this->redirect('/menu');
+            $this->redirect('/home');
             exit();
         }
         $this->view('auth/userlogin', ['pageTitle' => 'Müşteri Girişi'], 'main');
@@ -28,7 +29,7 @@ class UserAuthController extends BaseController
     public function loginUser(): void
     {
         if (self::isUserLoggedIn()) {
-            $this->redirect('/menu');
+            $this->redirect('/home');
             exit();
         }
 
@@ -62,7 +63,7 @@ class UserAuthController extends BaseController
             error_log('[DEBUG UserAuth] Login successful. Session state: ' . print_r($_SESSION, true));
             
             // Check for a redirect URL from session (e.g., if they tried to access a protected page)
-            $redirectUrl = $_SESSION['redirect_to_after_login'] ?? '/menu';
+            $redirectUrl = $_SESSION['redirect_to_after_login'] ?? '/home';
             unset($_SESSION['redirect_to_after_login']);
 
             $_SESSION['js_redirect_url'] = $redirectUrl;

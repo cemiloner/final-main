@@ -102,6 +102,7 @@ if (isset($_SESSION['flash_message'])) {
     </div>
 </div>
 
+<?php /* Silinecek Test İçeriği Başlangıcı 
 <p>Admin Ürünler Sayfası Test İçeriği</p>
 
 <?php 
@@ -118,3 +119,4 @@ if (isset($products)) {
     echo "<p>Ürün verisi view'e gelmedi.</p>";
 }
 ?> 
+   Silinecek Test İçeriği Sonu */ ?> 

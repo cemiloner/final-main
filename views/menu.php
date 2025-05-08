@@ -8,6 +8,105 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
 // $activeTables MenuController tarafından gönderiliyor.
 ?>
 
+<style>
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Ürünler arası boşluk (hem satır hem sütun) */
+    justify-content: flex-start; /* Ürünleri satır başına yasla */
+    padding: 0; /* Tarayıcı varsayılan padding'ini sıfırla (ul/li için) */
+    list-style-type: none; /* Liste işaretlerini kaldır (ul/li için) */
+}
+
+.product-item {
+    flex-basis: calc(50% - 10px); /* Varsayılan: 2 sütun (430px ve üzeri) */
+    box-sizing: border-box; /* Padding ve border'ı genişliğe dahil et */
+    border: 1px solid #dee2e6; /* Hafif bir sınır */
+    border-radius: 8px; /* Köşeleri yuvarla */
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; // Resim ve yazıları ortalamak için, gerekirse açılır */
+    /* text-align: center; // Yazıları ortalamak için, gerekirse açılır */
+    background-color: #fff; /* Kart arka planı */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Hafif gölge */
+}
+
+/* Ürün fotoğraf container'ı için, .product-item içindeki ortalamayı destekler */
+.product-image-container {
+    width: 50vw; /* Geniş Ekranlar (769px+) için, 25vw * 2 */
+    padding-bottom: 50vw; /* 1:1 oran */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px; 
+    position: relative; 
+    overflow: hidden; 
+    border-radius: 4px; 
+    background-color: #f0f0f0; 
+}
+
+.product-image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-details {
+    margin-top: auto; /* Detayları kartın altına iter (eğer kart yükseklikleri farklıysa) */
+    width: 100%; /* Detayların tam genişlik kullanmasını sağlar */
+    text-align: center; /* Detayları ortala */
+}
+
+.product-details h4 {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.product-details p {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-bottom: 10px;
+    min-height: 3.6em; /* Açıklama için yaklaşık 2-3 satır yer ayırır */
+    overflow: hidden; /* Taşan açıklamayı gizler */
+}
+
+.product-details strong {
+    font-size: 1.2em;
+    color: var(--text-color-main, #333);
+}
+
+/* Orta Boy Ekranlar (Örn: Küçük tabletler, büyük telefonlar yatay, 430px - 768px) */
+@media (min-width: 430px) and (max-width: 768px) {
+    .product-image-container {
+        width: 60vw; /* Orta boy ekranlar için, 30vw * 2 */
+        padding-bottom: 60vw;
+    }
+    /* .product-item padding ayarı aynı kalabilir */
+}
+
+/* Küçük Ekranlar (Telefonlar dikey - Tek Sütun, 429px ve altı) */
+@media (max-width: 429px) {
+    .product-item {
+        flex-basis: 100%; 
+        padding: 10px; 
+    }
+    .product-image-container {
+        width: 90vw; /* Mobil için, 45vw * 2 */
+        padding-bottom: 90vw;
+    }
+    /* .product-details font ayarları aynı kalabilir */
+    .product-details h4 {
+        font-size: 1em;
+    }
+     .product-details strong {
+        font-size: 1.1em;
+    }
+}
+</style>
+
 <h2><?php echo htmlspecialchars($pageTitle ?? 'Menü'); ?></h2>
 
 <div id="order-message" class="message" style="display: none;">
@@ -48,6 +147,20 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
                          <div class="product-list"> <?php // Eski ul yerine div ?>
                               <?php foreach ($productsByCategory[$category->id] as $product): ?>
                                  <div class="product-item"> <?php // Eski li yerine div ?>
+                                     <div class="product-image-container" style="position: relative; width: 100px; padding-bottom: 100px; /* 1:1 Aspect Ratio - Sabit Boyut */ margin: 0 auto 10px auto; /* Ortala ve alt boşluk */ overflow: hidden; border-radius: 4px; background-color: #f0f0f0;">
+                                         <?php
+                                         $imageSrc = "/images/default-placeholder.png"; // Varsayılan resim yolu
+                                         $imageAlt = "Varsayılan Ürün Resmi";
+                                         $imageStyle = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.7;";
+
+                                         if (!empty($product->image_path) && file_exists(ROOT_PATH . '/public' . $product->image_path)) {
+                                             $imageSrc = htmlspecialchars($product->image_path);
+                                             $imageAlt = htmlspecialchars($product->name);
+                                             $imageStyle = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"; // Opacity yok
+                                         }
+                                         ?>
+                                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $imageAlt; ?>" style="<?php echo $imageStyle; ?>">
+                                     </div>
                                      <div class="product-details">
                                           <h4><?php echo htmlspecialchars($product->name); ?></h4>
                                           <p><?php echo htmlspecialchars($product->description); ?></p>

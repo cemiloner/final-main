@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Router;
+use App\Controllers\HomeController;
 use App\Controllers\MenuController;
 use App\Controllers\OrderController;
 use App\Controllers\AdminController;
@@ -10,14 +11,21 @@ use App\Controllers\AdminProductController;
 use App\Controllers\AdminCategoryController;
 use App\Controllers\AdminTableController;
 use App\Controllers\CartController;
+use App\Controllers\AdminFeedbackController;
 
 /** @var Router $router */
 
-// Main page (Menu)
-$router->get('/', [MenuController::class, 'index']);
+// Kök URL ('/') Ana Sayfayı göstersin
+$router->get('/', [HomeController::class, 'index']);
+
+// '/home' rotası da Ana Sayfayı göstersin (aynı controller/method)
+$router->get('/home', [HomeController::class, 'index']);
+
+// Geri Bildirim Formu Gönderimi
+$router->post('/feedback/submit', [HomeController::class, 'submitFeedback']);
 
 // Müşteri (User) Rotaları
-$router->get('/menu', [MenuController::class, 'index']);
+$router->get('/menu', [MenuController::class, 'index']); // '/menu' Menüyü gösterir
 $router->post('/order', [OrderController::class, 'store']);
 $router->post('/cart/add', [CartController::class, 'addToCart']);
 $router->get('/cart', [CartController::class, 'viewCart']);
@@ -42,8 +50,12 @@ $router->get('/logout', [AuthController::class, 'logout']);    // This is ADMIN 
 $router->get('/admin', [AdminController::class, 'dashboard']);
 $router->get('/admin/orders', [AdminController::class, 'orders']);
 $router->get('/admin/orders/archived', [AdminController::class, 'archivedOrders']);
+$router->post('/admin/orders/archived/deleteAll', [AdminController::class, 'deleteAllArchivedOrders']);
 $router->post('/admin/orders/update-status', [AdminController::class, 'updateOrderStatus']);
 $router->post('/admin/end-of-day', [AdminController::class, 'endOfDayProcess']);
+$router->get('/admin/api/active-orders', [AdminController::class, 'activeOrdersJson']); // AJAX için aktif siparişler
+$router->get('/admin/feedback', [AdminFeedbackController::class, 'index']);
+$router->post('/admin/feedback/deleteAll', [AdminFeedbackController::class, 'deleteAll']);
 
 // Admin Ürün Yönetimi Rotaları
 $router->get('/admin/products', [AdminProductController::class, 'index']);

@@ -100,4 +100,102 @@
             </div>
         </div>
     </div>
-</section> 
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableListContainer = document.getElementById('table-list-container');
+    const tableListMessage = document.getElementById('table-list-message');
+
+    if (tableListContainer) {
+        tableListContainer.addEventListener('click', function(event) {
+            const targetButton = event.target.closest('.table-toggle-status-btn');
+            if (!targetButton) {
+                return; // Clicked outside a toggle button
+            }
+
+            event.preventDefault(); // Prevent default button action if any
+
+            const tableId = targetButton.dataset.tableId;
+            // const currentStatus = targetButton.dataset.currentStatus; // Not strictly needed for the request
+
+            // Show a simple loading state on the button (optional)
+            const originalButtonText = targetButton.innerHTML;
+            targetButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Değiştiriliyor...';
+            targetButton.disabled = true;
+
+            const formData = new FormData();
+            formData.append('table_id', tableId);
+
+            fetch('/admin/tables/toggle-status', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    // 'Content-Type': 'application/x-www-form-urlencoded' // FormData sets it automatically
+                    'X-Requested-With': 'XMLHttpRequest' // Good practice for server-side detection of AJAX
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    const tableRow = targetButton.closest('tr[data-table-id="' + data.table_id + '"]');
+                    if (tableRow) {
+                        const statusBadge = tableRow.querySelector('td:nth-child(3) span.badge');
+                        const icon = targetButton.querySelector('i');
+
+                        if (data.new_status) { // Table is now active
+                            statusBadge.classList.remove('badge-danger');
+                            statusBadge.classList.add('badge-success');
+                            statusBadge.textContent = 'Aktif';
+                            targetButton.innerHTML = '<i class="fas fa-toggle-off"></i> Pasif Yap';
+                            targetButton.dataset.currentStatus = '1';
+                            icon.className = 'fas fa-toggle-off';
+                        } else { // Table is now inactive
+                            statusBadge.classList.remove('badge-success');
+                            statusBadge.classList.add('badge-danger');
+                            statusBadge.textContent = 'Pasif';
+                            targetButton.innerHTML = '<i class="fas fa-toggle-on"></i> Aktif Yap';
+                            targetButton.dataset.currentStatus = '0';
+                            icon.className = 'fas fa-toggle-on';
+                        }
+                    }
+                    if (tableListMessage) {
+                        tableListMessage.className = 'message message-success';
+                        tableListMessage.textContent = data.message || 'Durum başarıyla güncellendi.';
+                        tableListMessage.style.display = 'block';
+                        setTimeout(() => { tableListMessage.style.display = 'none'; }, 3000);
+                    }
+                } else {
+                    if (tableListMessage) {
+                        tableListMessage.className = 'message message-error';
+                        tableListMessage.textContent = data.message || 'Durum güncellenirken bir hata oluştu.';
+                        tableListMessage.style.display = 'block';
+                         setTimeout(() => { tableListMessage.style.display = 'none'; }, 5000);
+                    }
+                    // Restore button text only on catch, if it was changed to loading
+                    if (targetButton.innerHTML.includes('fa-spinner')) {
+                        targetButton.innerHTML = originalButtonText;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling table status:', error);
+                if (tableListMessage) {
+                    tableListMessage.className = 'message message-error';
+                    tableListMessage.textContent = 'Bir ağ hatası oluştu. Lütfen tekrar deneyin.';
+                    tableListMessage.style.display = 'block';
+                    setTimeout(() => { tableListMessage.style.display = 'none'; }, 5000);
+                    // Restore button text only on catch, if it was changed to loading
+                    if (targetButton.innerHTML.includes('fa-spinner')) {
+                        targetButton.innerHTML = originalButtonText;
+                    }
+                }
+            })
+            .finally(() => {
+                targetButton.disabled = false;
+            });
+        });
+    }
+});
+</script> 

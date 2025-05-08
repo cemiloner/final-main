@@ -5,6 +5,14 @@
 ?>
 <h2><?php echo htmlspecialchars($pageTitle); ?></h2>
 
+<div style="margin-bottom: 15px; text-align: right;">
+    <form method="POST" action="/admin/orders/archived/deleteAll" onsubmit="return confirm('Tüm arşivlenmiş siparişleri (\'delivered\' ve \'cancelled\') kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve gün sonu raporlarınızı etkilemez.');">
+        <button type="submit" class="button button-danger" style="padding: 8px 15px; font-size: 0.9em;">
+            <i class="fas fa-trash-alt"></i> Tüm Arşivlenmiş Siparişleri Sil
+        </button>
+    </form>
+</div>
+
 <p><a href="/admin/orders">Aktif Siparişlere Geri Dön</a></p>
 
 <div class="orders-table-container card">
