@@ -46,12 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCartItems();
     });
 
-    // Close sidebar
-    closeSidebar.addEventListener('click', function() {
-        cartSidebar.classList.remove('active');
-        floatingButton.style.display = 'flex';
-    });
-
     // Close sidebar when clicking outside
     document.addEventListener('click', function(event) {
         if (!cartSidebar.contains(event.target) && !floatingButton.contains(event.target)) {
@@ -59,6 +53,34 @@ document.addEventListener('DOMContentLoaded', function() {
             floatingButton.style.display = 'flex';
         }
     });
+
+    // Swipe to close cart sidebar
+    // let touchStartX = 0;
+    // let touchEndX = 0;
+    // const swipeThreshold = 50; // Minimum pixels to be considered a swipe
+
+    // if (cartSidebar) {
+    //     cartSidebar.addEventListener('touchstart', function(event) {
+    //         touchStartX = event.changedTouches[0].screenX;
+    //     }, { passive: true });
+
+    //     cartSidebar.addEventListener('touchend', function(event) {
+    //         touchEndX = event.changedTouches[0].screenX;
+    //         handleSwipeGesture();
+    //     });
+    // }
+
+    // function handleSwipeGesture() {
+    //     const deltaX = touchEndX - touchStartX;
+    //     // Swipe right to close (assuming sidebar is on the right)
+    //     if (deltaX > swipeThreshold && cartSidebar.classList.contains('active')) {
+    //         cartSidebar.classList.remove('active');
+    //         if (floatingButton) floatingButton.style.display = 'flex';
+    //     }
+    //     // Reset touch positions
+    //     touchStartX = 0;
+    //     touchEndX = 0;
+    // }
 
     // Adjust main content margin when sidebar is open
     cartSidebar.addEventListener('transitionend', function() {

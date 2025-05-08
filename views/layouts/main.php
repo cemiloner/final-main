@@ -86,7 +86,7 @@ use App\Controllers\UserAuthController; // Make controller available
                 // Show Feedback link on all customer pages except /home
                 if ($currentPath !== 'home' && $currentPath !== ''): // Also exclude root path which might be home
                 ?>
-                <a href="/feedback"><i class="fas fa-comment-dots"></i> Görüşlerinizi Bildirin</a>
+                <a href="/home"><i class="fas fa-comment-dots"></i> Görüşlerinizi Bildirin</a>
                 <?php endif; ?>
                 
                 <?php if (UserAuthController::isUserLoggedIn()): ?>

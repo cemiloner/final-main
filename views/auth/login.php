@@ -1,6 +1,6 @@
 <div class="login-container card">
     <div class="card-body">
-        <h2 class="text-center"><?php echo htmlspecialchars($pageTitle ?? 'Admin Girişi'); ?></h2>
+        <h2 class="text-center"><?php echo htmlspecialchars($pageTitle ?? 'Yönetim Paneli Girişi'); ?></h2>
 
         <?php 
         // General flash messages (success or error)

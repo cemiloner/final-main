@@ -1,11 +1,11 @@
 <?php
 // Admin Dashboard View
 ?>
-<h2><?php echo htmlspecialchars($pageTitle); ?></h2>
+<h2><?php echo htmlspecialchars($pageTitle ?? 'Yönetim Paneli'); ?></h2>
 
 <div class="dashboard-container card">
     <div class="card-body">
-        <p>Admin paneline hoş geldiniz.</p>
+        <p>Yönetim paneline hoş geldiniz.</p>
         <div class="dashboard-links">
             <a href="/admin/orders" class="btn btn-primary"><i class="fas fa-list-alt"></i> Aktif Siparişler</a>
             <a href="/admin/orders/archived" class="btn btn-secondary"><i class="fas fa-archive"></i> Arşivlenmiş Siparişler</a>

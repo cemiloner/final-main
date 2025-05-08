@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' - Hello Pastane Admin' : 'Hello Pastane Admin Paneli'; ?></title>
+    <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' - Yönetim Paneli' : 'Hello Pastane Yönetim Paneli'; ?></title>
     <link rel="icon" href="/images/cake.png" type="image/png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -11,9 +11,9 @@
 <body>
     <header class="admin-header">
         <div class="container">
-            <h1><a href="/admin"><i class="fas fa-user-shield"></i> Admin Paneli</a></h1>
+            <h1><a href="/admin"><i class="fas fa-user-shield"></i> Yönetim Paneli</a></h1>
             <nav>
-                <a href="/admin"><i class="fas fa-tachometer-alt"></i> Panel</a>
+                <a href="/admin"><i class="fas fa-tachometer-alt"></i> Yönetim Paneli</a>
                 <a href="/admin/orders"><i class="fas fa-clipboard-list"></i> Siparişler</a>
                 <a href="/admin/products"><i class="fas fa-box-open"></i> Ürünler</a>
                 <a href="/admin/tables"><i class="fas fa-chair"></i> Masa Yönetimi</a>
@@ -28,7 +28,7 @@
         </div>
     </main>
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> Hello Pastane - Admin</p>
+        <p>&copy; <?php echo date('Y'); ?> Hello Pastane - Yönetim Paneli</p>
     </footer>
     <script src="/js/app.js"></script>
 </body>
