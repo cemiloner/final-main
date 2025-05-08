@@ -10,6 +10,7 @@
             <a href="/admin/orders" class="btn btn-primary"><i class="fas fa-list-alt"></i> Aktif Siparişler</a>
             <a href="/admin/orders/archived" class="btn btn-secondary"><i class="fas fa-archive"></i> Arşivlenmiş Siparişler</a>
             <a href="/admin/products" class="btn btn-info"><i class="fas fa-box"></i> Ürün Yönetimi</a>
+            <a href="/admin/tables" class="btn btn-info"><i class="fas fa-chair"></i> Masa Yönetimi</a>
             <a href="/admin/feedback" class="btn btn-info"><i class="fas fa-comments"></i> Geri Bildirimler</a>
             <a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
         </div>

@@ -137,7 +137,7 @@ class AdminTableController extends BaseController
             $this->jsonResponse([
                 'success' => true, 
                 'message' => 'Masa durumu başarıyla güncellendi.', 
-                'new_status' => $table->is_active, // Yeni durumu JS'e bildir (original, without explicit bool cast here)
+                'new_status' => (bool)$table->is_active, // Explicitly cast to boolean for JSON
                 'table_id' => $table->id
             ]);
 

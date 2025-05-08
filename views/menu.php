@@ -113,27 +113,45 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
     <!-- AJAX mesajları buraya gelecek -->
 </div>
 
-<!-- Masa Seçim Alanı -->
-<div id="table-selection-section" class="card mb-3">
-    <div class="card-body">
-        <h3 class="card-title"><i class="fas fa-chair"></i> Masa Seçimi</h3>
-        <?php if (!empty($activeTables)): ?>
-            <div class="form-group">
-                <label for="selected_table_id">Lütfen Sipariş İçin Bir Masa Seçin:</label>
-                <select id="selected_table_id" name="selected_table_id" class="form-control">
-                    <option value="">-- Masa Seçiniz --</option>
-                    <?php foreach ($activeTables as $table): ?>
-                        <option value="<?php echo $table->id; ?>"><?php echo htmlspecialchars($table->name); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small id="table-selection-error" class="error-text" style="display: none;">Lütfen bir masa seçin.</small>
-            </div>
-        <?php else: ?>
-            <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Şu anda aktif masa bulunmamaktadır. Lütfen bir masa eklenmesini bekleyin veya yöneticiyle iletişime geçin.</p>
-        <?php endif; ?>
+<div id="cart-sidebar" style="position: fixed; top: 0; right: -350px; /* Başlangıçta gizli */ width: 350px; height: 100%; background-color: #f8f9fa; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 1050; padding: 20px; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; font-family: sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Siparişlerim</h3>
+        <button id="close-cart-btn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Masa Seçim Alanı BURAYA EKLENECEK -->
+    <div id="table-selection-section" class="card mb-3" style="margin-bottom: 15px; border: 1px solid #ced4da; border-radius: .25rem;">
+        <div class="card-body" style="padding: 1rem;">
+            <h5 class="card-title" style="margin-bottom: .75rem; font-size: 1.1rem;"><i class="fas fa-chair"></i> Masa Seçimi</h5>
+            <?php if (!empty($activeTables)): ?>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="selected_table_id" style="display: block; margin-bottom: .5rem; font-weight: 500;">Lütfen Sipariş İçin Bir Masa Seçin:</label>
+                    <select id="selected_table_id" name="selected_table_id" class="form-control" style="display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; color: #495057; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; border-radius: .25rem; transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;">
+                        <option value="">-- Masa Seçiniz --</option>
+                        <?php foreach ($activeTables as $table): ?>
+                            <option value="<?php echo $table->id; ?>"><?php echo htmlspecialchars($table->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small id="table-selection-error" class="error-text" style="display: none; color: #dc3545; margin-top: .25rem;">Lütfen bir masa seçin.</small>
+                </div>
+            <?php else: ?>
+                <p class="text-danger" style="color: #dc3545; margin-bottom: 0;"><i class="fas fa-exclamation-triangle"></i> Şu anda aktif masa bulunmamaktadır.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <!-- /Masa Seçim Alanı Bitiş -->
+
+    <div id="cart-items-list" style="flex-grow: 1; overflow-y: auto;">
+        <!-- Sepet öğeleri buraya JavaScript ile eklenecek -->
+        <p id="empty-cart-message" style="text-align: center; color: #6c757d; margin-top: 20px;">Sepetiniz şu anda boş.</p>
+    </div>
+    <div style="border-top: 1px solid #dee2e6; padding-top: 15px; margin-top: 15px;">
+        <h4>Toplam: <span id="cart-total">0.00</span> TL</h4>
+        <button id="checkout-btn" style="width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top:10px;">
+            Siparişi Tamamla (Geçici)
+        </button>
     </div>
 </div>
-<!-- /Masa Seçim Alanı -->
 
 <div id="menu-container" <?php echo empty($activeTables) ? 'style="display:none;"' : ''; ?> > <!-- Aktif masa yoksa menüyü gizle -->
     <?php if (!empty($categories) && !empty($productsByCategory)): ?>
@@ -204,27 +222,9 @@ use App\Core\BaseController; // Örnek, namespace kullanımına göre değişebi
 </div> <?php // menu-container div sonu ?> 
 
 <!-- Sağ Alt Köşe "Sepeti Görüntüle" Butonu -->
-<button id="toggle-cart-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
+<button id="toggle-cart-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 15px; background-color: var(--gray-dark, #3f3f3f); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
     🛒
 </button>
-
-<!-- Sepet Sidebar -->
-<div id="cart-sidebar" style="position: fixed; top: 0; right: -350px; /* Başlangıçta gizli */ width: 350px; height: 100%; background-color: #f8f9fa; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 1050; padding: 20px; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; font-family: sans-serif;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; margin-bottom: 15px;">
-        <h3 style="margin: 0;">Siparişlerim</h3>
-        <button id="close-cart-btn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
-    </div>
-    <div id="cart-items-list" style="flex-grow: 1; overflow-y: auto;">
-        <!-- Sepet öğeleri buraya JavaScript ile eklenecek -->
-        <p id="empty-cart-message" style="text-align: center; color: #6c757d; margin-top: 20px;">Sepetiniz şu anda boş.</p>
-    </div>
-    <div style="border-top: 1px solid #dee2e6; padding-top: 15px; margin-top: 15px;">
-        <h4>Toplam: <span id="cart-total">0.00</span> TL</h4>
-        <button id="checkout-btn" style="width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top:10px;">
-            Siparişi Tamamla (Geçici)
-        </button>
-    </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -249,6 +249,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     toggleCartBtn.addEventListener('click', toggleSidebar);
     closeCartBtn.addEventListener('click', toggleSidebar);
+
+    // Yeni eklenecek kısım: Sidebar dışına tıklanınca kapat
+    document.addEventListener('click', function(event) {
+        // Sidebar'ın açık olup olmadığını kontrol et (stil üzerinden)
+        const isSidebarOpen = cartSidebar.style.right === '0px';
+
+        // Tıklanan yerin sidebar veya sidebar toggle butonu olup olmadığını kontrol et
+        const clickedInsideSidebar = cartSidebar.contains(event.target);
+        const clickedOnToggleButton = toggleCartBtn.contains(event.target) || event.target === toggleCartBtn;
+        const clickedOnCloseButton = closeCartBtn.contains(event.target) || event.target === closeCartBtn; // Kapatma butonunu da kontrol et
+
+        if (isSidebarOpen && !clickedInsideSidebar && !clickedOnToggleButton && !clickedOnCloseButton) {
+            // Eğer sidebar açıksa ve tıklanan yer sidebar'ın veya toggle butonunun dışındaysa,
+            // ve aynı zamanda kapatma butonunun kendisi de değilse sidebar'ı kapat.
+            // toggleSidebar() fonksiyonu zaten açık/kapalı durumunu yönetiyor.
+            // Ancak burada spesifik olarak kapatmak istiyoruz, bu yüzden doğrudan stili ayarlayabiliriz
+            // veya toggleSidebar()'ın sadece kapatma işlemi yapmasını sağlayabiliriz.
+            // Mevcut toggleSidebar() zaten doğru çalışacaktır.
+            toggleSidebar();
+        }
+    });
+    // --- Sidebar dışına tıklanınca kapatma sonu ---
 
     function renderCart() {
         cartItemsList.innerHTML = ''; 

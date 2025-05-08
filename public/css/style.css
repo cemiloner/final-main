@@ -84,14 +84,16 @@ body {
     padding: 0 var(--spacing-unit);
 }
 
-/* Header (Floating Navigation Bar - Sticky Implementation) */
+/* Header (Floating Navigation Bar - Reverting to original/sticky) */
 header {
     background-color: var(--container-bg);
     padding: var(--spacing-unit) 0;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: calc(var(--spacing-unit) * 2);
-    position: sticky;
+    margin-bottom: calc(var(--spacing-unit) * 2); /* Re-adding margin-bottom */
+    position: sticky; /* Reverting back to sticky (or remove if not needed) */
     top: 0;
+    /* left: 0; */ /* Removed */
+    /* width: 100%; */ /* Removed */
     z-index: 1000;
     box-shadow: 0 2px 10px var(--shadow-color-soft);
 }
@@ -148,6 +150,7 @@ header nav a.active { /* For active page indication */
 
 /* Main Content & Typography */
 main {
+    /* padding-top: 80px; */ /* Removed fixed header padding */
     padding-bottom: calc(var(--spacing-unit) * 2.5);
 }
 
